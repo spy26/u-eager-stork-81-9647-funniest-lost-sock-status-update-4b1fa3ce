@@ -33,6 +33,15 @@ if (ENTRY !== ENTRY.trim() || ENTRY.includes("\n")) {
 // $MAKEFUN_OUTPUT_DIR/entry.txt as well — then read /output/entry.txt back
 // and refuse to exit 0 unless it is byte-identical to the entry, so a
 // truncated or re-encoded write can never pass silently.
+// Final gate, run immediately before anything is written: the entry must
+// be present, fit on exactly one line, and stay within the 120-character
+// limit. Any violation aborts here, before a file exists.
+const lines = ENTRY.split(/\r\n|\n|\r/);
+if (ENTRY.length === 0 || lines.length !== 1 || ENTRY.length > 120) {
+  throw new Error(
+    "entry failed final check: needs one non-empty line of at most 120 characters",
+  );
+}
 mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", ENTRY, "utf8");
 const outDir = process.env.MAKEFUN_OUTPUT_DIR;
